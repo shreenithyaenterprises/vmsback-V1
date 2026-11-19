@@ -14,14 +14,14 @@ const envPath = envCandidates.find((candidate) => fs.existsSync(candidate)) || e
 dotenvConfig({ path: envPath });
 
 const loadConfig = () => ({
-	DB_HOST: process.env.DB_HOST,
+	DB_HOST: process.env.DB_HOST || process.env.DB_SERVER,
 	DB_USER: process.env.DB_USER,
-	DB_PASS: process.env.DB_PASS,
+	DB_PASS: process.env.DB_PASS || process.env.DB_PASSWORD,
 	DB_PORT: process.env.DB_PORT,
 	DB_NAME: process.env.DB_NAME,
-	DB_HOST_CLIENT: process.env.DB_HOST_CLIENT,
+	DB_HOST_CLIENT: process.env.DB_HOST_CLIENT || process.env.DB_SERVER_CLIENT,
 	DB_USER_CLIENT: process.env.DB_USER_CLIENT,
-	DB_PASS_CLIENT: process.env.DB_PASS_CLIENT,
+	DB_PASS_CLIENT: process.env.DB_PASS_CLIENT || process.env.DB_PASSWORD_CLIENT,
 	DB_PORT_CLIENT: process.env.DB_PORT_CLIENT,
 	DB_NAME_CLIENT: process.env.DB_NAME_CLIENT,
 	SMTP_HOST: process.env.SMTP_HOST,

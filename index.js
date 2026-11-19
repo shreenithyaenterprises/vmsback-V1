@@ -5,7 +5,7 @@ getDatabaseByTarget('main')
 	.then(() => {
 		console.log('Database connection established.'); // eslint-disable-line no-console
 		console.log(
-			`DB target: ${process.env.DB_HOST} | ${process.env.DB_NAME} | ${process.env.DB_USER}`
+			`DB target: ${process.env.DB_HOST || process.env.DB_SERVER} | ${process.env.DB_NAME} | ${process.env.DB_USER}`
 		); // eslint-disable-line no-console
 		const portArg =
 			process.argv.find((arg) => arg.startsWith('--port='))?.split('=')[1] ||
