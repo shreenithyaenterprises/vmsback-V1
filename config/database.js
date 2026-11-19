@@ -61,6 +61,11 @@ let clientDbFailed = false;
 const getDatabaseByTarget = async (dbTarget = 'main') => {
 	if (dbTarget === 'main') {
 		if (!mainDb) {
+			if (!dbConfig.server || !dbConfig.database) {
+				throw new Error(
+					`Database configuration missing! DB_HOST/DB_SERVER is '${dbConfig.server}', DB_NAME is '${dbConfig.database}'. Please set these in your .env file.`
+				);
+			}
 			console.log(`Connecting to MAIN database ${dbConfig.server}:${dbConfig.port}/${dbConfig.database}`);
 			mainDb = await sql.connect(dbConfig);
 			console.log('Connected to MAIN database');

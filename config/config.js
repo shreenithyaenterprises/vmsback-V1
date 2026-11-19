@@ -5,13 +5,24 @@ import { config as dotenvConfig } from 'dotenv';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const apiRootDir = path.resolve(currentDir, '..');
+const parentDir = path.resolve(apiRootDir, '..');
+
 const envCandidates = [
 	path.resolve(apiRootDir, '.env'),
 	path.resolve(apiRootDir, '.env.dev'),
+	path.resolve(process.cwd(), '.env'),
+	path.resolve(parentDir, '.env'),
 ];
-const envPath = envCandidates.find((candidate) => fs.existsSync(candidate)) || envCandidates[1];
+const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
 
-dotenvConfig({ path: envPath });
+if (envPath) {
+	dotenvConfig({ path: envPath });
+	console.log(`Loaded environment from: ${envPath}`);
+} else {
+	console.warn(`[WARNING] No .env file found! Checked locations:`);
+	envCandidates.forEach((c) => console.warn(`  - ${c}`));
+	console.warn(`Please create a .env file (copy .env.example) with DB_HOST, DB_NAME, DB_USER, DB_PASS.`);
+}
 
 const loadConfig = () => ({
 	DB_HOST: process.env.DB_HOST || process.env.DB_SERVER,
