@@ -7,19 +7,60 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((origin) => origin.trim()) || [];
+const getAllowedOrigins = () => {
+	const raw = process.env.ALLOWED_ORIGINS;
+	if (!raw) return [];
+	return raw
+		.split(',')
+		.map((origin) => origin.trim())
+		.filter(Boolean);
+};
+
+const isPrivateOrLocalHost = (hostname) => {
+	if (!hostname) return false;
+	if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+	if (/^127\.\d+\.\d+\.\d+$/.test(hostname)) return true;
+	if (/^10\.\d+\.\d+\.\d+$/.test(hostname)) return true;
+	if (/^192\.168\.\d+\.\d+$/.test(hostname)) return true;
+	if (/^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(hostname)) return true;
+	return false;
+};
 
 const isOriginAllowed = (origin) => {
 	if (!origin) return true;
-	if (allowedOrigins.includes(origin)) return true;
+
+	const allowedOrigins = getAllowedOrigins();
+
+	// If ALLOWED_ORIGINS is '*' or empty/not configured, allow all origins
+	if (allowedOrigins.length === 0 || allowedOrigins.includes('*')) {
+		return true;
+	}
+
 	try {
 		const { hostname } = new URL(origin);
-		if (hostname === 'snithya.com' || hostname.endsWith('.snithya.com')) {
+
+		// Always allow local and private network IPs on any port
+		if (isPrivateOrLocalHost(hostname)) {
 			return true;
 		}
+
+		// Check explicit origin or domain patterns configured in .env
+		for (const allowed of allowedOrigins) {
+			if (allowed === origin) return true;
+			const cleanAllowed = allowed.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+			if (cleanAllowed.startsWith('*.')) {
+				const base = cleanAllowed.slice(2);
+				if (hostname === base || hostname.endsWith('.' + base)) {
+					return true;
+				}
+			} else if (cleanAllowed === hostname) {
+				return true;
+			}
+		}
 	} catch {
-		// ignore invalid origin
+		// ignore malformed URLs
 	}
+
 	return false;
 };
 
@@ -29,7 +70,7 @@ app.use(
 			if (isOriginAllowed(origin)) {
 				return callback(null, true);
 			}
-			return callback(new Error('Not allowed by CORS'));
+			return callback(null, false);
 		},
 		credentials: true,
 	})
